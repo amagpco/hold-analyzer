@@ -126,6 +126,18 @@
 
         data.results.forEach(result => {
             html += renderResultSummary(result);
+
+            // Price history chart (separate component)
+            const priceHistory = renderPriceHistory(result);
+            html += priceHistory.html;
+            if (priceHistory.chartConfig) {
+                chartConfigs.push(priceHistory.chartConfig);
+            }
+            if (priceHistory.lazyConfig) {
+                chartConfigs.push(priceHistory.lazyConfig);
+            }
+
+            // Trades + monthly charts component
             const chartData = renderTradesTable(result);
             html += chartData.html;
             if (chartData.chartConfig) {
@@ -139,7 +151,18 @@
         // Initialize charts after HTML is inserted
         setTimeout(() => {
             chartConfigs.forEach(config => {
+                if (config.type === 'price_history') {
+                    createPriceHistoryChart(config);
+                    return;
+                }
+                if (config.type === 'price_history_lazy') {
+                    loadPriceHistoryAndRender(config);
+                    return;
+                }
                 createTradesChart(config);
+                if (config.monthly) {
+                    createMonthlyChart(config.monthly);
+                }
             });
         }, 100);
     }
@@ -199,6 +222,179 @@
         `;
     }
 
+    function renderPriceHistory(result) {
+        const baseId = String(result.symbol || 'symbol').replace(/[^a-zA-Z0-9]/g, '');
+        const chartId = `price-${baseId}-${Date.now()}`;
+        const hasHistory = Array.isArray(result.price_history) && result.price_history.length > 0;
+
+        if (!hasHistory) {
+            // build fallback from trades if available
+            const fallbackFromTrades = Array.isArray(result.trades)
+                ? result.trades
+                    .filter(t => t && t.trade_date && typeof t.entry_price === 'number')
+                    .map(t => ({ date: t.trade_date, price: t.entry_price }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                : [];
+            const containerId = `price-container-${baseId}-${Date.now()}`;
+            return {
+                html: `
+                    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100" id="${containerId}" data-symbol="${result.symbol}">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xl font-bold text-gray-900 flex items-center">
+                                <i class="fas fa-chart-area text-purple-600 mr-2"></i>
+                                Price History
+                            </h4>
+                            <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">${result.symbol}</span>
+                        </div>
+                        <div class="flex items-center justify-center h-40 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-gray-500">
+                            <i class="fas fa-cloud-download-alt mr-2"></i>
+                            Loading price history...
+                        </div>
+                    </div>
+                `,
+                chartConfig: null,
+                lazyConfig: {
+                    type: 'price_history_lazy',
+                    containerId: containerId,
+                    chartId: chartId,
+                    symbol: result.symbol,
+                    fallback: fallbackFromTrades
+                }
+            };
+        }
+
+        const labels = result.price_history.map(p => formatDate(p.date));
+        const prices = result.price_history.map(p => Number(p.price));
+
+        return {
+            html: `
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-chart-area text-purple-600 mr-2"></i>
+                            Price History
+                        </h4>
+                        <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">${result.symbol}</span>
+                    </div>
+                    <div class="relative" style="height: 300px;">
+                        <canvas id="${chartId}"></canvas>
+                    </div>
+                </div>
+            `,
+            chartConfig: {
+                type: 'price_history',
+                id: chartId,
+                labels: labels,
+                prices: prices
+            }
+        };
+    }
+
+    function createPriceHistoryChart(config) {
+        const ctx = document.getElementById(config.id);
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: config.labels,
+                datasets: [
+                    {
+                        label: 'Close Price',
+                        data: config.prices,
+                        borderColor: 'rgb(147, 51, 234)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        pointRadius: 0,
+                        tension: 0.25,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        callbacks: {
+                            label: function(context) {
+                                return `Price: $${Number(context.parsed.y).toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            callback: function(value) { return '$' + Number(value).toFixed(2); }
+                        }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    async function loadPriceHistoryAndRender(config) {
+        const container = document.getElementById(config.containerId);
+        if (!container) return;
+        const symbol = container.getAttribute('data-symbol') || config.symbol;
+        if (!symbol) return;
+
+        async function tryFetch(urls) {
+            for (const url of urls) {
+                try {
+                    const resp = await fetch(url, { method: 'GET' });
+                    if (!resp.ok) continue;
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data.length > 0) return data;
+                } catch (_) { /* next */ }
+            }
+            return null;
+        }
+
+        const urls = [
+            `/api/price_history?symbol=${encodeURIComponent(symbol)}`,
+            `/api/price-history?symbol=${encodeURIComponent(symbol)}`,
+            `/api/history?symbol=${encodeURIComponent(symbol)}`
+        ];
+
+        let history = await tryFetch(urls);
+
+        // Fallback to derived series from trades if available
+        if (!history || history.length === 0) {
+            if (Array.isArray(config.fallback) && config.fallback.length > 0) {
+                history = config.fallback;
+            }
+        }
+
+        if (!history || history.length === 0) {
+            const empty = container.querySelector('.h-40');
+            if (empty) empty.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-600"></i>No price history available.';
+            return;
+        }
+
+        // Replace placeholder with chart canvas
+        container.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-chart-area text-purple-600 mr-2"></i>
+                    Price History
+                </h4>
+                <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">${symbol}</span>
+            </div>
+            <div class="relative" style="height: 300px;">
+                <canvas id="${config.chartId}"></canvas>
+            </div>
+        `;
+
+        const labels = history.map(p => formatDate(p.date));
+        const prices = history.map(p => Number(p.price));
+        createPriceHistoryChart({ type: 'price_history', id: config.chartId, labels, prices });
+    }
+
     function renderTradesTable(result) {
         if (!result.trades || result.trades.length === 0) {
             return {
@@ -215,7 +411,9 @@
         }
 
         let tableRows = '';
-        const chartId = `chart-${result.symbol.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}`;
+        const baseId = result.symbol.replace(/[^a-zA-Z0-9]/g, '');
+        const chartId = `chart-${baseId}-${Date.now()}`;
+        const monthlyChartId = `monthly-${baseId}-${Date.now()}`;
 
         // Prepare chart data
         const labels = [];
@@ -265,6 +463,44 @@
             `;
         });
 
+        // Prepare monthly summary chart data
+        // 1) labels: YYYY-MM from monthly_summary
+        const labelsMonthly = (result.monthly_summary || []).map(m => m.month);
+
+        // 2) cumulative invested per month
+        let runningInvested = 0;
+        const cumulativeInvested = (result.monthly_summary || []).map(m => {
+            const investedThisMonth = m.traded && m.trade ? (m.trade.amount_invested || 0) : 0;
+            runningInvested += investedThisMonth;
+            return runningInvested;
+        });
+
+        // 3) total current value per month (cumulative shares up to that month × current_price)
+        const monthFromDate = (dateString) => {
+            if (!dateString) return '';
+            // Expecting YYYY-MM-DD → take YYYY-MM
+            return String(dateString).slice(0, 7);
+        };
+
+        // aggregate shares bought by month key
+        const sharesByMonth = {};
+        (result.trades || []).forEach(t => {
+            const m = monthFromDate(t.trade_date);
+            if (!m) return;
+            sharesByMonth[m] = (sharesByMonth[m] || 0) + (t.shares_bought || 0);
+        });
+
+        // walk labels in order and accumulate total shares up to each month
+        let runningShares = 0;
+        const cumulativeShares = labelsMonthly.map(m => {
+            if (sharesByMonth[m]) {
+                runningShares += sharesByMonth[m];
+            }
+            return runningShares;
+        });
+
+        const totalCurrentValue = cumulativeShares.map(s => s * (result.current_price || 0));
+
         return {
             html: `
                 <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
@@ -298,6 +534,16 @@
                         </div>
                     </div>
 
+                    <div class="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h5 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-layer-group text-green-600 mr-2"></i>
+                            Monthly Total Invested (Cumulative)
+                        </h5>
+                        <div class="relative" style="height: 260px;">
+                            <canvas id="${monthlyChartId}"></canvas>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
@@ -322,7 +568,13 @@
                 id: chartId,
                 labels: labels,
                 boomPrices: boomPrices,
-                fallbackPrices: fallbackPrices
+                fallbackPrices: fallbackPrices,
+                monthly: {
+                    id: monthlyChartId,
+                    labels: labelsMonthly,
+                    valuesInvested: cumulativeInvested,
+                    valuesValue: totalCurrentValue
+                }
             }
         };
     }
@@ -409,6 +661,69 @@
                             minRotation: 45
                         }
                     }
+                }
+            }
+        });
+    }
+
+    function createMonthlyChart(config) {
+        const ctx = document.getElementById(config.id);
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: config.labels,
+                datasets: [
+                    {
+                        label: 'Cumulative Invested',
+                        data: config.valuesInvested,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        pointRadius: 3,
+                        tension: 0.2,
+                        fill: true
+                    },
+                    {
+                        label: 'Total Current Value',
+                        data: config.valuesValue,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        pointRadius: 3,
+                        tension: 0.2,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        callbacks: {
+                            label: function(context) {
+                                const idx = context.dataIndex;
+                                const invested = (config.valuesInvested || [])[idx] || 0;
+                                const value = (config.valuesValue || [])[idx] || 0;
+                                const pl = value - invested;
+                                if (context.dataset.label === 'Total Current Value') {
+                                    return `Value: $${value.toFixed(2)}  (P/L: $${pl.toFixed(2)})`;
+                                }
+                                return `Invested: $${invested.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            callback: function(value) { return '$' + Number(value).toFixed(0); }
+                        }
+                    },
+                    x: { grid: { display: false } }
                 }
             }
         });
