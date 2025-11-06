@@ -1,3 +1,5 @@
+![Alt text](https://i.postimg.cc/jSK4hCnK/tech-analysis.webp)
+
 # Smart DCA Calculator API
 
 A FastAPI-based Dollar Cost Averaging (DCA) calculator with intelligent boom range detection for stocks, ETFs, and gold.
