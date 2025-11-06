@@ -1,0 +1,207 @@
+<div class="bg-gradient-to-br from-white to-blue-50/30 rounded-3xl shadow-2xl p-8 md:p-10 border border-blue-100/50 mb-8">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 px-4 pb-2 rounded-xl mr-3 shadow-lg">
+                <i class="fas fa-calculator text-white text-xl"></i>
+            </div>
+            Investment Analysis
+        </h2>
+        <p class="text-gray-600 ml-12">Enter your investment parameters to get started</p>
+    </div>
+    
+    <form id="analysis-form" class="space-y-6">
+        <!-- Symbols Input -->
+        <div>
+            <label for="symbols" class="block text-sm font-semibold text-gray-800 mb-3">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                Stock Symbols
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="symbols" 
+                    name="symbols" 
+                    required
+                    placeholder="e.g., AAPL, MSFT, GOOGL, TSLA"
+                    class="w-full pl-11 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-900 placeholder-gray-400 shadow-sm hover:border-gray-300"
+                >
+            </div>
+            <div class="mt-2 flex items-start space-x-2">
+                <i class="fas fa-info-circle text-blue-500 text-xs mt-0.5"></i>
+                <p class="text-xs text-gray-600">Separate multiple symbols with commas. Works with stocks, ETFs, and indices.</p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Monthly Amount -->
+            <div>
+                <label for="monthly_amount" class="block text-sm font-semibold text-gray-800 mb-3">
+                    <i class="fas fa-wallet text-blue-600 mr-2"></i>
+                    Monthly Investment
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="text-gray-500 font-medium">$</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="monthly_amount" 
+                        name="monthly_amount" 
+                        required
+                        min="0"
+                        step="0.01"
+                        value="100"
+                        placeholder="100.00"
+                        class="w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-900 shadow-sm hover:border-gray-300"
+                    >
+                </div>
+                <p class="mt-2 text-xs text-gray-600">Amount to invest each month</p>
+            </div>
+            
+            <!-- Months Input -->
+            <div>
+                <label for="months" class="block text-sm font-semibold text-gray-800 mb-3">
+                    <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+                    Analysis Period
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-clock text-gray-400"></i>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="months" 
+                        name="months" 
+                        required
+                        min="1"
+                        max="120"
+                        value="24"
+                        placeholder="24"
+                        class="w-full pl-11 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-900 shadow-sm hover:border-gray-300"
+                    >
+                </div>
+                <p class="mt-2 text-xs text-gray-600">Number of months (1-120)</p>
+            </div>
+        </div>
+        
+        <!-- Advanced Strategy Options -->
+        <div class="bg-white/70 border border-blue-100 rounded-2xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Strategy Settings</h3>
+                    <p class="text-sm text-gray-600">Fine-tune how the analyzer deploys your budget.</p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                    Advanced
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div>
+                    <label for="strategy_profile" class="block text-sm font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
+                        Strategy Profile
+                    </label>
+                    <select
+                        id="strategy_profile"
+                        name="strategy_profile"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 shadow-sm"
+                    >
+                        <option value="aggressive">Aggressive (faster deployment)</option>
+                        <option value="balanced" selected>Balanced (default)</option>
+                        <option value="conservative">Conservative (stricter signals)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="allocation_mode" class="block text-sm font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-chart-pie text-blue-600 mr-2"></i>
+                        Allocation Mode
+                    </label>
+                    <select
+                        id="allocation_mode"
+                        name="allocation_mode"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 shadow-sm"
+                    >
+                        <option value="full" selected>Deploy full accumulated budget</option>
+                        <option value="tiered">Tiered (scale by signal strength)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="min_trade_amount" class="block text-sm font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-filter text-blue-600 mr-2"></i>
+                        Minimum Trade Amount ($)
+                    </label>
+                    <input
+                        type="number"
+                        id="min_trade_amount"
+                        name="min_trade_amount"
+                        min="0"
+                        step="10"
+                        placeholder="Optional"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 shadow-sm"
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="min_signal_strength" class="block text-sm font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-bolt text-blue-600 mr-2"></i>
+                        Minimum Signal Strength
+                    </label>
+                    <div class="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-5">
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                            <span>More entries</span>
+                            <span>Fewer entries</span>
+                        </div>
+                        <input
+                            type="range"
+                            id="min_signal_strength"
+                            name="min_signal_strength"
+                            min="20"
+                            max="70"
+                            step="5"
+                            value="40"
+                            class="w-full accent-blue-600"
+                        >
+                        <p class="mt-3 text-sm text-gray-700">
+                            Required strength: <span id="min-signal-strength-value" class="font-semibold text-blue-600">40</span>
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">Overrides profile default when set.</p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                    <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Quick Tips
+                    </h4>
+                    <ul class="text-xs text-blue-900 space-y-1">
+                        <li><span class="font-semibold">Aggressive</span> buys on lighter dips with larger budgets.</li>
+                        <li><span class="font-semibold">Balanced</span> mirrors the classic Smart DCA defaults.</li>
+                        <li><span class="font-semibold">Conservative</span> waits for stronger confirmations and smaller buys.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+            <button 
+                type="submit"
+                id="submit-btn"
+                class="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white font-bold py-4 px-8 rounded-xl hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-xl hover:shadow-2xl flex items-center justify-center space-x-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+                <i class="fas fa-rocket"></i>
+                <span>Analyze My Investments</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </form>
+</div>
+

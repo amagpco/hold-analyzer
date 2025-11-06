@@ -1,0 +1,18 @@
+Popular Stock Symbols for Testing
+
+Note: The performance (%) below is for 6-month, 12-month, 24-month, 36-month, and 48-month periods. Performance for 36 and 48 months may differ significantly.
+
+| No. | Symbol | Company Name                       |  6mo Return (%) | 12mo Return (%) | 24mo Return (%) | 36mo Return (%) | 48mo Return (%) |
+|-----|--------|------------------------------------|-----------------|-----------------|-----------------|-----------------|-----------------|
+|  1  | PLTR   | Palantir Technologies              |  67.82          | 126.03          | 563.33          |  1120.45        |   1154.22       |
+|  2  | AMD    | Advanced Micro Devices             |  22.44          | 110.72          | 106.66          |   192.85        |    324.18       |
+|  3  | INTC   | Intel Corporation                  |  18.94          |  80.16          |  50.21          |    59.91        |     42.15       |
+|  4  | GOOGL  | Alphabet Inc. (Google)             |  15.40          |  64.59          |  82.57          |   148.76        |    166.72       |
+|  5  | NVDA   | NVIDIA Corporation                 |  28.27          |  53.69          | 148.96          |   330.31        |    370.15       |
+|  6  | TSLA   | Tesla Inc.                         |  11.52          |  55.70          |  99.31          |   216.39        |    832.41       |
+|  7  | MSFT   | Microsoft Corporation              |  10.01          |  38.30          |  35.71          |    91.80        |    160.60       |
+|  8  | AMZN   | Amazon.com Inc.                    |   6.35          |  27.72          |  42.00          |    51.13        |     64.93       |
+|  9  | AAPL   | Apple Inc.                         |   5.12          |  26.67          |  38.78          |    80.57        |    195.34       |
+| 10  | NFLX   | Netflix Inc.                       |  -3.56          |  18.27          |  73.09          |    94.73        |    107.19       |
+| 11  | META   | Meta Platforms Inc. (Facebook)     |   6.39          |   2.75          |  42.71          |    65.84        |     85.52       |
+

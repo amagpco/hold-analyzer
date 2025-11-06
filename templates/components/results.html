@@ -1,0 +1,427 @@
+<div id="results-container" class="hidden">
+    <div id="loading" class="hidden text-center py-8">
+        <i class="fas fa-spinner fa-spin text-blue-600 text-4xl mb-4"></i>
+        <p class="text-gray-600">Analyzing investments...</p>
+    </div>
+
+    <div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p class="text-red-800"></p>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<script>
+    const minSignalInput = document.getElementById('min_signal_strength');
+    const minSignalDisplay = document.getElementById('min-signal-strength-value');
+    const strategySelect = document.getElementById('strategy_profile');
+    const strategyDefaults = {
+        aggressive: 30,
+        balanced: 40,
+        conservative: 55
+    };
+
+    const updateSignalDisplay = (value) => {
+        if (minSignalDisplay) {
+            minSignalDisplay.textContent = Number(value).toFixed(0);
+        }
+    };
+
+    if (minSignalInput) {
+        updateSignalDisplay(minSignalInput.value);
+        minSignalInput.addEventListener('input', (event) => {
+            updateSignalDisplay(event.target.value);
+        });
+    }
+
+    if (strategySelect) {
+        strategySelect.addEventListener('change', (event) => {
+            const selected = event.target.value;
+            if (minSignalInput && strategyDefaults[selected] !== undefined) {
+                const defaultValue = strategyDefaults[selected];
+                minSignalInput.value = defaultValue;
+                updateSignalDisplay(defaultValue);
+            }
+        });
+    }
+
+    document.getElementById('analysis-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const submitBtn = document.getElementById('submit-btn');
+        const symbols = form.symbols.value.split(',').map(s => s.trim()).filter(s => s);
+        const monthlyAmount = parseFloat(form.monthly_amount.value);
+        const months = parseInt(form.months.value);
+        const strategyProfile = form.strategy_profile.value;
+        const allocationMode = form.allocation_mode.value;
+        const minSignalStrength = parseFloat(form.min_signal_strength.value);
+        const minTradeAmountRaw = form.min_trade_amount.value;
+        const minTradeAmount = minTradeAmountRaw ? parseFloat(minTradeAmountRaw) : null;
+
+        const resultsContainer = document.getElementById('results-container');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>Analyzing...</span>';
+
+        resultsContainer.classList.remove('hidden');
+        loading.classList.remove('hidden');
+        error.classList.add('hidden');
+        results.innerHTML = '';
+
+        try {
+            const payload = {
+                symbols: symbols,
+                monthly_amount: monthlyAmount,
+                months: months,
+                strategy_profile: strategyProfile,
+                allocation_mode: allocationMode,
+                min_signal_strength: minSignalStrength
+            };
+
+            if (minTradeAmount !== null && !Number.isNaN(minTradeAmount)) {
+                payload.min_trade_amount = minTradeAmount;
+            }
+
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Analysis failed');
+            }
+
+            loading.classList.add('hidden');
+            displayResults(data);
+
+        } catch (err) {
+            loading.classList.add('hidden');
+            error.querySelector('p').textContent = err.message;
+            error.classList.remove('hidden');
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-rocket"></i><span>Analyze My Investments</span><i class="fas fa-arrow-right"></i>';
+        }
+    });
+
+    function displayResults(data) {
+        const results = document.getElementById('results');
+
+        if (!data.success || !data.results || data.results.length === 0) {
+            results.innerHTML = '<p class="text-gray-600">No results to display.</p>';
+            return;
+        }
+
+        let html = '<div class="space-y-8">';
+        const chartConfigs = [];
+
+        data.results.forEach(result => {
+            html += renderResultSummary(result);
+            const chartData = renderTradesTable(result);
+            html += chartData.html;
+            if (chartData.chartConfig) {
+                chartConfigs.push(chartData.chartConfig);
+            }
+        });
+
+        html += '</div>';
+        results.innerHTML = html;
+
+        // Initialize charts after HTML is inserted
+        setTimeout(() => {
+            chartConfigs.forEach(config => {
+                createTradesChart(config);
+            });
+        }, 100);
+    }
+
+    function renderResultSummary(result) {
+        const profitClass = result.return_percent >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50';
+        const profitIcon = result.return_percent >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+        const totalMonths = result.months_bought + result.months_waited;
+
+        return `
+            <div class="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-xl p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+                        ${result.symbol}
+                    </h3>
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold ${profitClass}">
+                        <i class="fas ${profitIcon} mr-1"></i>
+                        ${result.return_percent.toFixed(2)}%
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+                        <p class="text-xs text-gray-600 mb-1">Total Invested</p>
+                        <p class="text-xl font-bold text-gray-900">$${result.total_invested.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+                        <p class="text-xs text-gray-600 mb-1">Current Value</p>
+                        <p class="text-xl font-bold text-gray-900">$${result.current_value.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+                        <p class="text-xs text-gray-600 mb-1">Profit/Loss</p>
+                        <p class="text-xl font-bold ${profitClass.replace('bg-', 'text-')}">$${result.profit_loss.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+                        <p class="text-xs text-gray-600 mb-1">Current Price</p>
+                        <p class="text-xl font-bold text-gray-900">$${result.current_price.toFixed(2)}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+                    <div>
+                        <p class="text-xs text-gray-600">Total Shares</p>
+                        <p class="text-lg font-semibold">${result.total_shares.toFixed(4)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Buy Rate</p>
+                        <p class="text-lg font-semibold">${(result.buy_rate * 100).toFixed(1)}%</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Months Traded</p>
+                        <p class="text-lg font-semibold">${result.months_bought}/${totalMonths}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTradesTable(result) {
+        if (!result.trades || result.trades.length === 0) {
+            return {
+                html: `
+                    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>No trades executed</p>
+                        </div>
+                    </div>
+                `,
+                chartConfig: null
+            };
+        }
+
+        let tableRows = '';
+        const chartId = `chart-${result.symbol.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}`;
+
+        // Prepare chart data
+        const labels = [];
+        const boomPrices = [];
+        const fallbackPrices = [];
+
+        result.trades.forEach((trade) => {
+            const tradeTypeClass = trade.trade_type === 'boom_range'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-gray-100 text-gray-800';
+            const tradeTypeIcon = trade.trade_type === 'boom_range'
+                ? 'fa-bolt'
+                : 'fa-calendar';
+            const plClass = trade.profit_loss && trade.profit_loss >= 0
+                ? 'text-green-600'
+                : 'text-red-600';
+            const plValue = trade.profit_loss !== null && trade.profit_loss !== undefined
+                ? `$${trade.profit_loss.toFixed(2)}`
+                : '-';
+
+            const dateLabel = formatDate(trade.trade_date);
+            labels.push(dateLabel);
+
+            if (trade.trade_type === 'boom_range') {
+                boomPrices.push(trade.entry_price);
+                fallbackPrices.push(null);
+            } else {
+                boomPrices.push(null);
+                fallbackPrices.push(trade.entry_price);
+            }
+
+            tableRows += `
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-4 text-sm text-gray-900">${dateLabel}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${tradeTypeClass}">
+                            <i class="fas ${tradeTypeIcon} mr-1"></i>
+                            ${trade.trade_type === 'boom_range' ? 'Boom Range' : 'Fallback'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-right font-semibold">$${trade.entry_price.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-sm text-right">${trade.shares_bought.toFixed(4)}</td>
+                    <td class="py-3 px-4 text-sm text-right font-medium">$${trade.amount_invested.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-sm text-right text-gray-600">${trade.total_shares_after.toFixed(4)}</td>
+                    <td class="py-3 px-4 text-sm text-right font-semibold ${plClass}">${plValue}</td>
+                </tr>
+            `;
+        });
+
+        return {
+            html: `
+                <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-list-ul text-blue-600 mr-2"></i>
+                            Trading History
+                        </h4>
+                        <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                            ${result.trades.length} ${result.trades.length === 1 ? 'trade' : 'trades'}
+                        </span>
+                    </div>
+
+                    <div class="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h5 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                            Trade Entry Prices Over Time
+                        </h5>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                        <div class="flex items-center justify-center gap-4 mt-3 text-xs">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                <span class="text-gray-600">Boom Range</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-gray-400 mr-2"></div>
+                                <span class="text-gray-600">Fallback</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200">
+                                    <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Date</th>
+                                    <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Type</th>
+                                    <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Entry Price</th>
+                                    <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Shares</th>
+                                    <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Amount</th>
+                                    <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 uppercase">Total Shares</th>
+                                    <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 uppercase">P/L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            chartConfig: {
+                id: chartId,
+                labels: labels,
+                boomPrices: boomPrices,
+                fallbackPrices: fallbackPrices
+            }
+        };
+    }
+
+    function createTradesChart(config) {
+        const ctx = document.getElementById(config.id);
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: config.labels,
+                datasets: [
+                    {
+                        label: 'Boom Range Trades',
+                        data: config.boomPrices,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.1,
+                        spanGaps: true
+                    },
+                    {
+                        label: 'Fallback Trades',
+                        data: config.fallbackPrices,
+                        borderColor: 'rgb(156, 163, 175)',
+                        backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: 'rgb(156, 163, 175)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.1,
+                        spanGaps: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                return `Entry Price: $${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+</script>
+

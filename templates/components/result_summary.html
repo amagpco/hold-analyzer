@@ -1,0 +1,47 @@
+<div class="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-xl p-6 border border-gray-100 mb-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+            {{ symbol }}
+        </h3>
+        <span class="px-4 py-2 rounded-full text-sm font-semibold {{ profit_class }}">
+            <i class="fas {{ profit_icon }} mr-1"></i>
+            {{ return_percent }}%
+        </span>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+            <p class="text-xs text-gray-600 mb-1">Total Invested</p>
+            <p class="text-xl font-bold text-gray-900">${{ total_invested }}</p>
+        </div>
+        <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+            <p class="text-xs text-gray-600 mb-1">Current Value</p>
+            <p class="text-xl font-bold text-gray-900">${{ current_value }}</p>
+        </div>
+        <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+            <p class="text-xs text-gray-600 mb-1">Profit/Loss</p>
+            <p class="text-xl font-bold {{ profit_class }}">${{ profit_loss }}</p>
+        </div>
+        <div class="bg-white/50 rounded-lg p-4 border border-gray-200">
+            <p class="text-xs text-gray-600 mb-1">Current Price</p>
+            <p class="text-xl font-bold text-gray-900">${{ current_price }}</p>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+        <div>
+            <p class="text-xs text-gray-600">Total Shares</p>
+            <p class="text-lg font-semibold">{{ total_shares }}</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-600">Buy Rate</p>
+            <p class="text-lg font-semibold">{{ buy_rate }}%</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-600">Months Traded</p>
+            <p class="text-lg font-semibold">{{ months_bought }}/{{ total_months }}</p>
+        </div>
+    </div>
+</div>
+
