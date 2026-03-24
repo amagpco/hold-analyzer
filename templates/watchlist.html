@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Smart DCA Analyzer - Watchlist{% endblock %}
+
+{% block content %}
+    <header class="mb-6">
+        <div class="bg-white rounded-3xl border border-red-100/70 shadow-xl p-6 md:p-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        Watchlist
+                    </h1>
+                    <p class="text-gray-600 mt-2">Top 20 liquid assets to monitor for Smart DCA opportunities.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="px-4 py-2 rounded-full bg-red-50 text-red-700 text-sm font-semibold">
+                        Updated weekly
+                    </div>
+                    <button class="px-4 py-2 rounded-xl bg-red-600 text-white font-semibold shadow-lg hover:bg-red-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="bg-white rounded-3xl border border-red-100/70 shadow-xl p-4">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+                        <th class="py-4 px-4">#</th>
+                        <th class="py-4 px-4">Asset</th>
+                        <th class="py-4 px-4">Category</th>
+                        <th class="py-4 px-4">Reason to Watch</th>
+                        <th class="py-4 px-4">Volatility</th>
+                        <th class="py-4 px-4 text-right">Bias</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-gray-700">
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">01</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">AAPL</div>
+                            <div class="text-xs text-gray-500">Apple Inc.</div>
+                        </td>
+                        <td class="py-4 px-4">Mega-cap Tech</td>
+                        <td class="py-4 px-4 text-gray-600">Stable cash flows, defensive growth leader.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">02</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">MSFT</div>
+                            <div class="text-xs text-gray-500">Microsoft</div>
+                        </td>
+                        <td class="py-4 px-4">Cloud + AI</td>
+                        <td class="py-4 px-4 text-gray-600">Strong enterprise moat and AI tailwinds.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">03</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">NVDA</div>
+                            <div class="text-xs text-gray-500">NVIDIA</div>
+                        </td>
+                        <td class="py-4 px-4">Semiconductors</td>
+                        <td class="py-4 px-4 text-gray-600">Leader in AI compute with high momentum.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">High</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Growth</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">04</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">AMZN</div>
+                            <div class="text-xs text-gray-500">Amazon</div>
+                        </td>
+                        <td class="py-4 px-4">E-Commerce</td>
+                        <td class="py-4 px-4 text-gray-600">AWS scale + retail resilience.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">05</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">GOOGL</div>
+                            <div class="text-xs text-gray-500">Alphabet</div>
+                        </td>
+                        <td class="py-4 px-4">Internet Platforms</td>
+                        <td class="py-4 px-4 text-gray-600">Search cash flows + AI optionality.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">06</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">META</div>
+                            <div class="text-xs text-gray-500">Meta Platforms</div>
+                        </td>
+                        <td class="py-4 px-4">Social + Ads</td>
+                        <td class="py-4 px-4 text-gray-600">High-margin ads, AI-driven engagement.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Growth</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">07</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">TSLA</div>
+                            <div class="text-xs text-gray-500">Tesla</div>
+                        </td>
+                        <td class="py-4 px-4">EV + Energy</td>
+                        <td class="py-4 px-4 text-gray-600">High beta, macro-sensitive growth.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">High</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Tactical</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">08</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">BRK.B</div>
+                            <div class="text-xs text-gray-500">Berkshire Hathaway</div>
+                        </td>
+                        <td class="py-4 px-4">Diversified</td>
+                        <td class="py-4 px-4 text-gray-600">Defensive blend of quality businesses.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">09</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">JPM</div>
+                            <div class="text-xs text-gray-500">JPMorgan Chase</div>
+                        </td>
+                        <td class="py-4 px-4">Financials</td>
+                        <td class="py-4 px-4 text-gray-600">Rate sensitivity + strong balance sheet.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">10</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">UNH</div>
+                            <div class="text-xs text-gray-500">UnitedHealth</div>
+                        </td>
+                        <td class="py-4 px-4">Healthcare</td>
+                        <td class="py-4 px-4 text-gray-600">Defensive growth with pricing power.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">11</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">XOM</div>
+                            <div class="text-xs text-gray-500">Exxon Mobil</div>
+                        </td>
+                        <td class="py-4 px-4">Energy</td>
+                        <td class="py-4 px-4 text-gray-600">Dividend strength with cyclical upside.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Value</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">12</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">COST</div>
+                            <div class="text-xs text-gray-500">Costco</div>
+                        </td>
+                        <td class="py-4 px-4">Consumer Staples</td>
+                        <td class="py-4 px-4 text-gray-600">Membership model adds stability.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">13</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">V</div>
+                            <div class="text-xs text-gray-500">Visa</div>
+                        </td>
+                        <td class="py-4 px-4">Payments</td>
+                        <td class="py-4 px-4 text-gray-600">Secular shift to digital payments.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">14</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">AVGO</div>
+                            <div class="text-xs text-gray-500">Broadcom</div>
+                        </td>
+                        <td class="py-4 px-4">Semiconductors</td>
+                        <td class="py-4 px-4 text-gray-600">Diversified chip and software exposure.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Growth</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">15</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">JNJ</div>
+                            <div class="text-xs text-gray-500">Johnson & Johnson</div>
+                        </td>
+                        <td class="py-4 px-4">Healthcare</td>
+                        <td class="py-4 px-4 text-gray-600">Defensive balance sheet + dividends.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Value</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">16</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">KO</div>
+                            <div class="text-xs text-gray-500">Coca-Cola</div>
+                        </td>
+                        <td class="py-4 px-4">Consumer Staples</td>
+                        <td class="py-4 px-4 text-gray-600">Global distribution with steady demand.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Value</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">17</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">PEP</div>
+                            <div class="text-xs text-gray-500">PepsiCo</div>
+                        </td>
+                        <td class="py-4 px-4">Consumer Staples</td>
+                        <td class="py-4 px-4 text-gray-600">Snack + beverage dominance.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Value</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">18</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">SPY</div>
+                            <div class="text-xs text-gray-500">S&P 500 ETF</div>
+                        </td>
+                        <td class="py-4 px-4">Index ETF</td>
+                        <td class="py-4 px-4 text-gray-600">Broad market barometer.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Low</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Core</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">19</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">QQQ</div>
+                            <div class="text-xs text-gray-500">Nasdaq 100 ETF</div>
+                        </td>
+                        <td class="py-4 px-4">Growth ETF</td>
+                        <td class="py-4 px-4 text-gray-600">Tech-heavy momentum exposure.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Growth</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-red-50/50 transition-colors">
+                        <td class="py-4 px-4 text-gray-500">20</td>
+                        <td class="py-4 px-4">
+                            <div class="font-semibold text-gray-900">GLD</div>
+                            <div class="text-xs text-gray-500">Gold ETF</div>
+                        </td>
+                        <td class="py-4 px-4">Commodity</td>
+                        <td class="py-4 px-4 text-gray-600">Hedge against risk-off periods.</td>
+                        <td class="py-4 px-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Medium</span>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <span class="text-red-600 font-semibold">Hedge</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

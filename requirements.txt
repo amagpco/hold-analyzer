@@ -1,6 +1,10 @@
-ccxt>=4.0.0
-pandas>=2.0.0
-yfinance>=0.2.0
-fastapi>=0.110.0
-pydantic>=2.0.0
-jinja2==3.1.6
+ccxt
+pandas
+yfinance
+fastapi
+pydantic
+jinja2
+uvicorn[standard]
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+python-dotenv>=1.0.0

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Smart DCA Analyzer - Results{% endblock %}
+
+{% block content %}
+    <header class="mb-6">
+        <div class="bg-white rounded-3xl border border-red-100/70 shadow-xl p-6 md:p-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        Results
+                    </h1>
+                    <p class="text-gray-600 mt-2">Saved analysis runs appear here as a history list.</p>
+                </div>
+                <div class="px-4 py-2 rounded-full bg-red-50 text-red-700 text-sm font-semibold">
+                    {{ history|length }} run{% if history|length != 1 %}s{% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% if not history %}
+        <div class="bg-white rounded-2xl border border-red-100/70 shadow-xl p-8 text-center text-gray-600">
+            <i class="fas fa-folder-open text-3xl text-red-300 mb-3"></i>
+            <p class="font-semibold text-gray-800">No saved results yet</p>
+            <p class="text-sm mt-1">Run an analysis and your results will appear here.</p>
+        </div>
+    {% else %}
+        <div class="space-y-4">
+            {% for run in history|reverse %}
+                <section class="bg-white rounded-2xl p-4 px-8">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 ">
+                        <div>
+                            <p class="text-xs text-red-600 font-semibold uppercase tracking-wide">Run #{{ run.id }}</p>
+                            <h2 class="text-xl font-bold text-gray-900 mt-1">
+                                {{ run.symbols | join(', ') }}
+                            </h2>
+                            <p class="text-sm text-gray-600 mt-1">
+                                {{ run.created_at }} • ${{ '%.2f'|format(run.monthly_amount) }} / month • {{ run.months }} months
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold">
+                                {{ run.strategy_profile|capitalize }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
+                                {{ run.allocation_mode|capitalize }}
+                            </span>
+                            {% if run.summary %}
+                                <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                                    Best: {{ run.summary.best_performer.symbol }} ({{ '%.2f'|format(run.summary.best_performer.return_percent) }}%)
+                                </span>
+                            {% endif %}
+                            <a href="/results/{{ run.id }}" class="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-separate border-spacing-y-2">
+                            <thead>
+                                <tr class="text-left text-xs uppercase tracking-wide text-gray-500">
+                                    <th class="py-3 px-4">Symbol</th>
+                                    <th class="py-3 px-4">Return</th>
+                                    <th class="py-3 px-4">Total Invested</th>
+                                    <th class="py-3 px-4">Current Value</th>
+                                    <th class="py-3 px-4">Profit / Loss</th>
+                                    <th class="py-3 px-4">Buy Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-gray-700">
+                                {% for item in run.results %}
+                                    <tr class="bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-red-200 transition-all">
+                                        <td class="py-4 px-4 font-semibold text-gray-900">
+                                            <div class="flex items-center gap-3">
+                                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-50 text-red-700 text-xs font-bold">
+                                                    {{ item.symbol[:2] }}
+                                                </span>
+                                                <span class="text-base">{{ item.symbol }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            {% if item.return_percent >= 0 %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold">
+                                                    <i class="fas fa-arrow-up mr-1"></i>
+                                                    {{ '%.2f'|format(item.return_percent) }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold">
+                                                    <i class="fas fa-arrow-down mr-1"></i>
+                                                    {{ '%.2f'|format(item.return_percent) }}%
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-4 px-4 text-gray-600">${{ '%.2f'|format(item.total_invested) }}</td>
+                                        <td class="py-4 px-4 text-gray-600">${{ '%.2f'|format(item.current_value) }}</td>
+                                        <td class="py-4 px-4">
+                                            {% if item.profit_loss >= 0 %}
+                                                <span class="text-green-700 font-semibold">${{ '%.2f'|format(item.profit_loss) }}</span>
+                                            {% else %}
+                                                <span class="text-red-700 font-semibold">${{ '%.2f'|format(item.profit_loss) }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
+                                                {{ '%.1f'|format(item.buy_rate * 100) }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

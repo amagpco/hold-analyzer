@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart DCA Analyzer{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-slate-50">
+
+    <div class="px-4 py-4">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <aside class="lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:h-screen bg-white rounded-3xl shadow-xl border border-red-100/70 p-6 pb-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-chart-pie text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Smart DCA</p>
+                        <p class="text-lg font-bold text-gray-900">Analyzer</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
+                        <i class="fas fa-gauge"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/watchlist" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
+                        <i class="fas fa-star"></i>
+                        <span>Watchlist</span>
+                    </a>
+                    <a href="/results" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Results</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
+                        <i class="fas fa-sliders"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
+                        <i class="fas fa-circle-question"></i>
+                        <span>Help</span>
+                    </a>
+                </nav>
+
+                <div class="mt-8 p-4 rounded-2xl bg-red-50 border border-red-100">
+                    <p class="text-xs text-red-700 font-semibold">Pro tip</p>
+                    <p class="text-sm text-gray-700 mt-1">Use comma-separated symbols for batch analysis.</p>
+                </div>
+            </aside>
+
+            <main class="flex-1 lg:ml-64">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+</body>
+</html>

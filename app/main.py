@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from typing import List
+from datetime import datetime
 import logging
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from app.models import (
 )
 from app.services.data_fetcher import fetch_historical_data
 from app.services.dca_calculator import calculate_smart_dca
+from app.db import AnalysisRun, SessionLocal, init_db
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -31,6 +33,9 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 static_dir = BASE_DIR / "static"
+
+# Initialize DB schema on startup
+init_db()
 
 
 def convert_result_to_dca_result(result: dict) -> DCAResult:
@@ -86,13 +91,85 @@ app.add_middleware(
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Main analysis page."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"request": request},
+    )
 
 
 @app.get("/analyze", response_class=HTMLResponse)
 async def analyze_page(request: Request):
     """Analysis page (alias for index)."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"request": request},
+    )
+
+
+@app.get("/watchlist", response_class=HTMLResponse)
+async def watchlist_page(request: Request):
+    """Watchlist page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="watchlist.html",
+        context={"request": request},
+    )
+
+
+@app.get("/results", response_class=HTMLResponse)
+async def results_page(request: Request):
+    """Results page showing stored analysis history."""
+    with SessionLocal() as session:
+        runs = (
+            session.query(AnalysisRun)
+            .order_by(AnalysisRun.id.desc())
+            .all()
+        )
+        history = []
+        for run in runs:
+            history.append({
+                "id": run.id,
+                "created_at": run.created_at.isoformat(timespec="seconds") + "Z",
+                "symbols": run.symbols.split(","),
+                "monthly_amount": run.monthly_amount,
+                "months": run.months,
+                "strategy_profile": run.strategy_profile,
+                "allocation_mode": run.allocation_mode,
+                "summary": run.summary,
+                "results": run.results,
+            })
+    return templates.TemplateResponse(
+        request=request,
+        name="results_page.html",
+        context={"request": request, "history": history},
+    )
+
+
+@app.get("/results/{run_id}", response_class=HTMLResponse)
+async def results_detail_page(request: Request, run_id: int):
+    """Detailed results page for a single analysis run."""
+    with SessionLocal() as session:
+        run = session.query(AnalysisRun).filter(AnalysisRun.id == run_id).first()
+        if not run:
+            raise HTTPException(status_code=404, detail="Result not found")
+        run_data = {
+            "id": run.id,
+            "created_at": run.created_at.isoformat(timespec="seconds") + "Z",
+            "symbols": run.symbols.split(","),
+            "monthly_amount": run.monthly_amount,
+            "months": run.months,
+            "strategy_profile": run.strategy_profile,
+            "allocation_mode": run.allocation_mode,
+            "summary": run.summary,
+            "results": run.results,
+        }
+    return templates.TemplateResponse(
+        request=request,
+        name="results_detail.html",
+        context={"request": request, "run": run_data},
+    )
 
 
 # ========== API Routes ==========
@@ -194,6 +271,21 @@ async def analyze_multiple_symbols(request: DCARequest):
         message = f"Successfully analyzed {len(results)} symbol(s)"
         if errors:
             message += f". {len(errors)} error(s) occurred: {', '.join(errors[:3])}"
+
+        # Store analysis snapshot for results page (MySQL)
+        with SessionLocal() as session:
+            run = AnalysisRun(
+                created_at=datetime.utcnow(),
+                symbols=",".join(request.symbols),
+                monthly_amount=request.monthly_amount,
+                months=request.months,
+                strategy_profile=request.strategy_profile,
+                allocation_mode=request.allocation_mode,
+                summary=summary,
+                results=[r.model_dump() for r in results],
+            )
+            session.add(run)
+            session.commit()
         
         return DCAResponse(
             success=True,
